@@ -399,55 +399,51 @@ class CommandInterface:
         if ch == 'O':
             return val == self._opp(me)
         return False  # should not happen with valid inputs
-
+    
     def _all_pattern_matches(self, me):
-        """
-        Find all matches across all patterns in all 8 directions.
-        Enforce equal-span max weight and strict-subset suppression.
-        Returns list of (coords_set, weight) for final kept matches.
-        """
-        equal_span_max = {}  # {frozenset((x,y),...): weight}
+        equal_span_max = {}  # {frozenset(full_coords): weight}
 
         for pat, w in self.patterns:
             L = len(pat)
-            # Try every start and direction
             for y0 in range(-(L - 1), self.height):
                 for x0 in range(-(L - 1), self.width):
                     for (sx, sy) in self.DIRS:
                         ok = True
-                        coords = []
+                        full_coords = []   # include off-board positions too
+                        # coords_onboard = []  # (optional) not needed for keys
                         for i, ch in enumerate(pat):
-                            off, val = self._cell_at(x0 + i*sx, y0 + i*sy)
+                            xi = x0 + i * sx
+                            yi = y0 + i * sy
+                            off, val = self._cell_at(xi, yi)
                             if not self._char_matches(ch, off, val, me):
                                 ok = False
                                 break
-                            if not off:
-                                coords.append((x0 + i*sx, y0 + i*sy))
-                            if not ok:
-                                continue
-                            if not coords:
-                                continue
-                            key = frozenset(coords)
-                            prev = equal_span_max.get(key)
-                            if prev is None or w > prev:
-                                equal_span_max[key] = w
+                            full_coords.append((xi, yi))
+                            # if not off:
+                            # coords_onboard.append((xi, yi))
+                        if not ok:
+                            continue
 
-        # Subset filtering: keep spans not strictly contained in a bigger span.
+                        key_full = frozenset(full_coords)
+                        prev = equal_span_max.get(key_full)
+                        if prev is None or w > prev:
+                            equal_span_max[key_full] = w
+
+        # Subset filtering using FULL spans (with off-board cells included)
         items = sorted(
-            ((coords, w) for coords, w in equal_span_max.items()),
-            key=lambda t: (-len(t[0]), -t[1])  # larger spans first, then larger weight
-        )
+            ((coords_full, w) for coords_full, w in equal_span_max.items()),
+            key=lambda t: (-len(t[0]), -t[1]))
         kept = []
-        for coords, w in items:
+        for coords_full, w in items:
             is_subset = False
-            for big_coords, _ in kept:
-                if len(coords) < len(big_coords) and coords.issubset(big_coords):
+            for big_full, _ in kept:
+                if len(coords_full) < len(big_full) and coords_full.issubset(big_full):
                     is_subset = True
                     break
             if not is_subset:
-                kept.append((coords, w))
+                kept.append((coords_full, w))
         return kept
-
+    
     def _position_eval_numeric(self):
         """Numeric positional evaluation for the current player."""
         me = self.player
