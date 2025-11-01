@@ -449,6 +449,10 @@ class CommandInterface:
         me = self.player
         matches = self._all_pattern_matches(me)
         return sum(w for _, w in matches)
+    
+    def _format1(self, x):
+        """Format with exactly one decimal place."""
+        return f"{round(x, 1):.1f}"
 
     def _fmt1_trim(self, x: float) -> str:
         s = f"{round(x, 1):.1f}"
