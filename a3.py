@@ -411,8 +411,8 @@ class CommandInterface:
         for pat, w in self.patterns:
             L = len(pat)
             # Try every start and direction
-            for y0 in range(self.height):
-                for x0 in range(self.width):
+            for y0 in range(-(L - 1), self.height):
+                for x0 in range(-(L - 1), self.width):
                     for (sx, sy) in self.DIRS:
                         ok = True
                         coords = []
@@ -423,15 +423,14 @@ class CommandInterface:
                                 break
                             if not off:
                                 coords.append((x0 + i*sx, y0 + i*sy))
-                        if not ok:
-                            continue
-                        if not coords:
-                            # (All-X pattern not provided per spec; ignore just in case)
-                            continue
-                        key = frozenset(coords)
-                        prev = equal_span_max.get(key)
-                        if prev is None or w > prev:
-                            equal_span_max[key] = w
+                            if not ok:
+                                continue
+                            if not coords:
+                                continue
+                            key = frozenset(coords)
+                            prev = equal_span_max.get(key)
+                            if prev is None or w > prev:
+                                equal_span_max[key] = w
 
         # Subset filtering: keep spans not strictly contained in a bigger span.
         items = sorted(
