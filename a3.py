@@ -405,8 +405,8 @@ class CommandInterface:
 
         for pat, w in self.patterns:
             L = len(pat)
-            for y0 in range(-(L - 1), self.height):
-                for x0 in range(-(L - 1), self.width):
+            for y0 in range(-(L - 1), self.height + (L - 1)):
+                for x0 in range(-(L - 1), self.width + (L - 1)):
                     for (sx, sy) in self.DIRS:
                         ok = True
                         full_coords = []   # include off-board positions too
