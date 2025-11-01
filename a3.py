@@ -450,10 +450,9 @@ class CommandInterface:
         matches = self._all_pattern_matches(me)
         return sum(w for _, w in matches)
 
-    def _format1(self, x):
-        """Format with exactly one decimal place."""
-        return f"{round(x, 1):.1f}"
-    
+    def _fmt1_trim(self, x: float) -> str:
+        s = f"{round(x, 1):.1f}"
+        return s[:-2] if s.endswith(".0") else s
         
     
     # new function to be implemented for assignment 3
@@ -508,7 +507,7 @@ class CommandInterface:
             child_val = self._position_eval_numeric()
             self.undo_move(x, y)                  # restores board and player
             vals.append(-child_val)               # negamax
-        print(" ".join(self._format1(v) for v in vals) if vals else "")
+        print(" ".join(self._fmt1_trim(v) for v in vals) if vals else "")
         return True
     
     # new function to be implemented for assignment 3
