@@ -10,7 +10,6 @@ class CommandInterface:
     # However, you may change or add to this code as you see fit, e.g. adding class variables to init
 
     def __init__(self):
-        # Define the string to function command mapping
     
         self.command_dict = {
             "help"     : self.help,
@@ -25,7 +24,7 @@ class CommandInterface:
             "play" : self.play
         }
 
-        # For 8-direction scanning: rows, cols, diags, anti-diags (forward & backward)
+        # For 8-direction scanning: rows, cols, diags, anti-diags 
         self.DIRS = [(1,0),(-1,0),(0,1),(0,-1),(1,1),(-1,-1),(1,-1),(-1,1)]
 
         # Game state
@@ -37,7 +36,7 @@ class CommandInterface:
         # This variable keeps track of the maximum allowed time to solve a position
         self.timelimit = 1
         
-        self.patterns = [] # you may change this
+        self.patterns = [] 
 
     # Convert a raw string to a command and a list of arguments
     def process_command(self, s):
@@ -121,7 +120,6 @@ class CommandInterface:
     # Note that your init_game function must support initializing the game with a string (this was not necessary in A1).
     # We already have implemented this functionality in our provided init_game function.
     def init_game(self, args):
-        # Check arguments
         if len(args) > 4:
             self.board_str = args.pop()
         else:
@@ -148,7 +146,6 @@ class CommandInterface:
             self.board.append([0]*self.width)
         self.player = 1
 
-        # optional board string to initialize the game state
         if len(self.board_str) > 0:
             board_rows = self.board_str.split("/")
             if len(board_rows) != self.height:
@@ -228,62 +225,56 @@ class CommandInterface:
         p2_score = self.handicap
 
         # Progress from left-to-right, top-to-bottom
-        # We define lines to start at the topmost (and for horizontal lines leftmost) point of that line
+        # We define lines to start at the topmost (and for horizontal lines leftmost)
         # At each point, score the lines which start at that point
         # By only scoring the starting points of lines, we never score line subsets
         for y in range(self.height):
             for x in range(self.width):
                 c = self.board[y][x]
                 if c != 0:
-                    lone_piece = True # Keep track of the special case of a lone piece
-                    # Horizontal
+                    lone_piece = True 
                     hl = 1
-                    if x == 0 or self.board[y][x-1] != c: #Check if this is the start of a horizontal line
+                    if x == 0 or self.board[y][x-1] != c: 
                         x1 = x+1
-                        while x1 < self.width and self.board[y][x1] == c: #Count to the end
+                        while x1 < self.width and self.board[y][x1] == c: 
                             hl += 1
                             x1 += 1
                     else:
                         lone_piece = False
-                    # Vertical
                     vl = 1
-                    if y == 0 or self.board[y-1][x] != c: #Check if this is the start of a vertical line
+                    if y == 0 or self.board[y-1][x] != c:
                         y1 = y+1
-                        while y1 < self.height and self.board[y1][x] == c: #Count to the end
+                        while y1 < self.height and self.board[y1][x] == c: 
                             vl += 1
                             y1 += 1
                     else:
                         lone_piece = False
-                    # Diagonal
                     dl = 1
-                    if y == 0 or x == 0 or self.board[y-1][x-1] != c: #Check if this is the start of a diagonal line
+                    if y == 0 or x == 0 or self.board[y-1][x-1] != c: 
                         x1 = x+1
                         y1 = y+1
-                        while x1 < self.width and y1 < self.height and self.board[y1][x1] == c: #Count to the end
+                        while x1 < self.width and y1 < self.height and self.board[y1][x1] == c: 
                             dl += 1
                             x1 += 1
                             y1 += 1
                     else:
                         lone_piece = False
-                    # Anit-diagonal
                     al = 1
-                    if y == 0 or x == self.width-1 or self.board[y-1][x+1] != c: #Check if this is the start of an anti-diagonal line
+                    if y == 0 or x == self.width-1 or self.board[y-1][x+1] != c: 
                         x1 = x-1
                         y1 = y+1
-                        while x1 >= 0 and y1 < self.height and self.board[y1][x1] == c: #Count to the end
+                        while x1 >= 0 and y1 < self.height and self.board[y1][x1] == c:
                             al += 1
                             x1 -= 1
                             y1 += 1
                     else:
                         lone_piece = False
-                    # Add scores for found lines
                     for line_length in [hl, vl, dl, al]:
                         if line_length > 1:
                             if c == 1:
                                 p1_score += 2 ** (line_length-1)
                             else:
                                 p2_score += 2 ** (line_length-1)
-                    # If all found lines are length 1, check if it is the special case of a lone piece
                     if hl == vl == dl == al == 1 and lone_piece:
                         if c == 1:
                             p1_score += 1
@@ -295,8 +286,6 @@ class CommandInterface:
     def score(self, args):
         print(self.calculate_score())
     
-    # Returns is_terminal, winner
-    # Assumes no draws
     def is_terminal(self):
         p1_score, p2_score = self.calculate_score()
         if p1_score >= self.score_cutoff:
@@ -304,12 +293,10 @@ class CommandInterface:
         elif p2_score >= self.score_cutoff:
             return True, 2
         else:
-            # Check if the board is full
             for y in range(self.height):
                 for x in range(self.width):
                     if self.board[y][x] == 0:
                         return False, 0
-            # The board is full, assign the win to the greater scoring player
             if p1_score > p2_score:
                 return True, 1
             else:
@@ -338,7 +325,6 @@ class CommandInterface:
             col = int(args[0])
             row = int(args[1])
         except ValueError:
-            #print("Illegal move: " + " ".join(args), file=sys.stderr)
             return False
         
         if col < 0 or col >= len(self.board[0]) or row < 0 or row >= len(self.board) or not self.is_pos_avail(col, row):
@@ -347,17 +333,12 @@ class CommandInterface:
         
         scores = self.calculate_score()
         if scores[0] >= self.score_cutoff or scores[1] >= self.score_cutoff:
-            #print("Illegal move: " + " ".join(args), "game ended.", file=sys.stderr)
             return False
 
-        # put the piece onto the board
         self.board[row][col] = self.player
 
         # compute the score for both players after each round
         self.calculate_score()
-
-        # record the move
-        # self.move_history.append((col, row, self.player))
 
         # switch player
         if self.player == 1:
@@ -367,7 +348,7 @@ class CommandInterface:
         
         return True
     
-        # ---------- Pattern/evaluation helpers ----------
+    # Pattern/evaluation helpers 
     def _opp(self, p):
         return 2 if p == 1 else 1
 
@@ -398,19 +379,17 @@ class CommandInterface:
             return val == me
         if ch == 'O':
             return val == self._opp(me)
-        return False  # should not happen with valid inputs
+        return False  
     
     def _all_pattern_matches(self, me):
-        equal_span_max = {}  # {frozenset(full_coords): weight}
-
+        equal_span_max = {}  
         for pat, w in self.patterns:
             L = len(pat)
             for y0 in range(-(L - 1), self.height + (L - 1)):
                 for x0 in range(-(L - 1), self.width + (L - 1)):
                     for (sx, sy) in self.DIRS:
                         ok = True
-                        full_coords = []   # include off-board positions too
-                        # coords_onboard = []  # (optional) not needed for keys
+                        full_coords = []   
                         for i, ch in enumerate(pat):
                             xi = x0 + i * sx
                             yi = y0 + i * sy
@@ -419,8 +398,6 @@ class CommandInterface:
                                 ok = False
                                 break
                             full_coords.append((xi, yi))
-                            # if not off:
-                            # coords_onboard.append((xi, yi))
                         if not ok:
                             continue
 
@@ -429,7 +406,7 @@ class CommandInterface:
                         if prev is None or w > prev:
                             equal_span_max[key_full] = w
 
-        # Subset filtering using FULL spans (with off-board cells included)
+        # Subset filtering 
         items = sorted(
             ((coords_full, w) for coords_full, w in equal_span_max.items()),
             key=lambda t: (-len(t[0]), -t[1]))
@@ -459,7 +436,6 @@ class CommandInterface:
         return s[:-2] if s.endswith(".0") else s
         
     
-    # new function to be implemented for assignment 3
     def load_patterns(self, args):
         if len(args) != 1:
             return False
@@ -481,40 +457,37 @@ class CommandInterface:
         except Exception:
             return False
         
-    # new function to be implemented for assignment 3
     def policy_moves(self, args):
         vals = []
         for (x, y) in self.get_moves():
             self.make_move(x, y)
             child_val = self._position_eval_numeric()
             self.undo_move(x, y)
-            vals.append(-child_val)  # negamax
+            vals.append(-child_val) 
 
         if not vals:
-            print("")   # no legal moves -> empty line is acceptable
+            print("")  
             return True
 
         m = min(vals)
-        shifted = [v - m + 1.0 for v in vals]   # strictly positive
+        shifted = [v - m + 1.0 for v in vals] 
         s = sum(shifted)
         probs = [round(v / s, 3) for v in shifted]
-        # exactly 3 decimals
         print(" ".join(f"{p:.3f}" for p in probs))
         return True
     
-    # new function to be implemented for assignment 3
+    
     def move_evaluation(self, args):
         vals = []
-        # Row-wise, left->right, top->bottom is already the order of get_moves()
+        # Row-wise, left->right, top->bottom 
         for (x, y) in self.get_moves():
-            self.make_move(x, y)                  # switches player internally
+            self.make_move(x, y)                  
             child_val = self._position_eval_numeric()
-            self.undo_move(x, y)                  # restores board and player
-            vals.append(-child_val)               # negamax
+            self.undo_move(x, y)                 
+            vals.append(-child_val)             
         print(" ".join(self._fmt1_trim(v) for v in vals) if vals else "")
         return True
     
-    # new function to be implemented for assignment 3
     def position_evaluation(self, args):
         score = self._position_eval_numeric()
         print(self._format1(score))
